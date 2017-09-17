@@ -11,15 +11,13 @@ def parse_arguments():
     parser = argparse.ArgumentParser(
         description="Send receipts for all charges added since this script was last run. Will not send receipts to people who already received receipts")
     parser.add_argument('-k', '--api-key', help="Your stripe secret api key", required=True)
-    parser.add_argument('-e', '--additional-emails', default=[], nargs='*', help="additional recipients for the receipt")
+    parser.add_argument('-e', '---recipients', nargs='+', help="recipients for the receipt", required=True)
     return parser.parse_args()
 
 
-def send_receipt(charge_id, additional_emails=[]):
+def send_receipt(charge_id, recipients):
     charge = stripe.Charge.retrieve(charge_id)
-    customer_email = charge.metadata['email']
-    additional_emails.append(customer_email)
-    charge.receipt_email = ','.join(additional_emails)
+    charge.receipt_email = ','.join(recipients)
     charge.save()
 
 
@@ -43,16 +41,16 @@ def get_charges(since=None):
     return iterator
 
 
-def run(additional_emails):
+def run(recipients):
     timestamp = get_previous_timestamp()
     for new_charge in get_charges(timestamp):
         charge_id = new_charge.id
         print(charge_id)
-        send_receipt(charge_id, additional_emails)
+        send_receipt(charge_id, recipients)
     update_timestamp()
 
 
 if __name__ == '__main__':
     parameters = parse_arguments()
     stripe.api_key = parameters.api_key
-    run(parameters.additional_emails)
+    run(parameters.recipients)
