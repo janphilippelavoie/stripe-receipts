@@ -28,7 +28,7 @@ def get_previous_timestamp():
     except FileNotFoundError:
         return None
     formatted_timestamp = int(math.floor(float(timestamp)))
-    return int(formatted_timestamp)
+    return formatted_timestamp
 
 
 def update_timestamp():
@@ -45,7 +45,7 @@ def run(recipients):
     timestamp = get_previous_timestamp()
     for new_charge in get_charges(timestamp):
         charge_id = new_charge.id
-        print(charge_id)
+        print("Processing for charge: " + charge_id)
         send_receipt(charge_id, recipients)
     update_timestamp()
 
